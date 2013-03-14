@@ -22,10 +22,8 @@ public class BallEntity extends Entity{
 
     @Override
     public void move(int delta){
-        float x = getX();
-        float y = getY();
-        float newX = x + delta * getXVelocity() / 1000;
-        float newY = y + delta * getYVelocity() / 1000;
+        float newX = getX() + (float) delta * getXVelocity() / 1000;
+        float newY = getY() + (float) delta * getYVelocity() / 1000;
         setX(newX);
         setY(newY);
     }

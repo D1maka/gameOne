@@ -11,7 +11,7 @@ import sprites.Sprite;
  */
 public class BeatEntity extends Entity {
 
-    public BeatEntity(int x, int y, Sprite sprite) {
+    public BeatEntity(float x, float y, Sprite sprite) {
         super(x, y, sprite);
     }
 
@@ -24,8 +24,7 @@ public class BeatEntity extends Entity {
     }
 
     public void move(int delta){
-        float x = getX();
-        float newX = x + delta * getXVelocity() / 1000;
+        float newX = getX() + (float) delta * getXVelocity() / 1000;
         setX(newX);
     }
 }

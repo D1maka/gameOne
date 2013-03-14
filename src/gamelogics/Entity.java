@@ -24,7 +24,7 @@ public class Entity {
         y = 0;
     }
 
-    public Entity(int x, int y, Sprite sprite){
+    public Entity(float x, float y, Sprite sprite){
         this.x = x;
         this.y = y;
         velocity = new int[]{0, 0};

@@ -26,9 +26,9 @@ public class Game extends Canvas implements Runnable{
     public static final int BEAT_START_Y = 580;
     public static final int BALL_START_X = 390;
     public static final int BALL_START_Y = 560;
-    private static final int BEAT_VELOCITY = 35;
-    private static final int BALL_X_VELOCITY = -35;
-    private static final int BALL_Y_VELOCITY = 35;
+    private static final int BEAT_VELOCITY = 37;
+    private static final int BALL_X_VELOCITY = -25;
+    private static final int BALL_Y_VELOCITY = 25;
     private static final float BEAT_FRICTION = 0.001f;
 
     private BufferStrategy bufferStrategy;

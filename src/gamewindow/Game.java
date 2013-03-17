@@ -169,7 +169,10 @@ public class Game extends Canvas implements Runnable{
             startPressed = false;
             gameFinnished = true;
         }
-        if (ballBounds.intersects(beat.getBounds())) {
+        if (ballBounds.intersectsLine(beat.getX(), beat.getY(), beat.getBounds().getWidth(), beat.getY()) ||
+                ballBounds.intersectsLine(beat.getX(), beat.getY(), beat.getX(), beat.getY() + beat.getBounds().getHeight()) ||
+                ballBounds.intersectsLine(beat.getX() + beat.getBounds().getWidth(), beat.getY(),
+                        beat.getX() + beat.getBounds().getWidth(), beat.getY() + beat.getBounds().getHeight())) {
             ball.horizontalBounce(BEAT_VELOCITY, BEAT_FRICTION);
         }
         // OPTIMISE IT!

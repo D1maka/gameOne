@@ -20,6 +20,8 @@ public class SpriteManager {
     public static final String BEAT_SPRITE = "Beat.jpg";
     public static final String BLOCK_SPRITE = "Block.jpg";
     public static final String BALL_SPRITE = "Ball.gif";
+    public static final String WON_GAME_SPRITE = "WonGame.gif";
+    public static final String LOST_GAME_SPRITE = "LostGame.gif";
 
     private static SpriteManager instance;
 

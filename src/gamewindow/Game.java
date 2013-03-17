@@ -1,6 +1,7 @@
 package gamewindow;
 
 import gamelogics.*;
+import sprites.Sprite;
 import sprites.SpriteManager;
 
 import javax.swing.*;
@@ -10,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,7 +28,7 @@ public class Game extends Canvas implements Runnable{
     public static final int BEAT_START_Y = 580;
     public static final int BALL_START_X = 390;
     public static final int BALL_START_Y = 560;
-    private static final int BEAT_VELOCITY = 37;
+    private static final int BEAT_VELOCITY = 47;
     private static final int BALL_X_VELOCITY = -25;
     private static final int BALL_Y_VELOCITY = 25;
     private static final float BEAT_FRICTION = 0.001f;
@@ -35,6 +37,7 @@ public class Game extends Canvas implements Runnable{
     private Boolean isRunning;
     private ArrayList<Entity> entities;
     private SpriteManager spriteManager;
+    private Sprite finalScreen;
 
     private BeatEntity beat;
     private BallEntity ball;
@@ -43,6 +46,8 @@ public class Game extends Canvas implements Runnable{
     private boolean rightPressed;
     private boolean leftPressed;
     private boolean startPressed;
+    private boolean gameFinnished;
+    private boolean gameLost;
 
     public Game(){
         isRunning = false;
@@ -85,14 +90,22 @@ public class Game extends Canvas implements Runnable{
         isRunning = true;
 
         while (isRunning){
-            currentTime = System.currentTimeMillis();
+            //currentTime = System.currentTimeMillis();
             //step = currentTime - lastTime;
-            lastTime = currentTime;
-
-            update(step);
+            //lastTime = currentTime;
+            if (startPressed) {
+                update(step);
+            }
             //step += TIME_BETWEEN_UPDATES;
-            render();
-            sleepTime = lastTime - System.currentTimeMillis();
+            if (!gameFinnished) {
+                render();
+            } else {
+                finishGame();
+                if (startPressed) {
+                    startInitialization();
+                }
+            }
+            //sleepTime = lastTime - System.currentTimeMillis();
 
             if (sleepTime > 0)  {
                 try {
@@ -126,9 +139,13 @@ public class Game extends Canvas implements Runnable{
         }
         ball.move((int)delta);
         resolveBallCollision();
+        checkWinCase();
     }
 
     public void startInitialization(){
+        gameFinnished = false;
+        startPressed = false;
+        entities.clear();
         beat = new BeatEntity(BEAT_START_X, BEAT_START_Y, spriteManager.getSprite(SpriteManager.BEAT_SPRITE));
         ball = new BallEntity(200, 200, spriteManager.getSprite(SpriteManager.BALL_SPRITE));
         cloud = new BlockCloudEntity(800, 40, spriteManager.getSprite(SpriteManager.BLOCK_SPRITE));
@@ -140,15 +157,44 @@ public class Game extends Canvas implements Runnable{
     }
 
     private void resolveBallCollision(){
-        if (ball.getBounds().intersectsLine(0, 0, 0, HEIGHT) || ball.getBounds().intersectsLine(WIDTH, 0, WIDTH, HEIGHT)){
+        Rectangle ballBounds = ball.getBounds();
+        if (ballBounds.intersectsLine(0, 0, 0, HEIGHT) || ballBounds.intersectsLine(WIDTH, 0, WIDTH, HEIGHT)){
             ball.verticalBounce(0, 0);
         }
-        if (ball.getBounds().intersectsLine(0, 0, WIDTH, 0) || ball.getBounds().intersectsLine(0, HEIGHT, WIDTH, HEIGHT)){
+        if (ballBounds.intersectsLine(0, 0, WIDTH, 0)){
             ball.horizontalBounce(0, 0);
         }
-        if (ball.getBounds().intersectsLine(beat.getBounds().getX(), beat.getBounds().getY(),
-                                            beat.getBounds().getX() + beat.getBounds().getWidth(), beat.getBounds().getY())) {
+        if (ballBounds.intersectsLine(0, HEIGHT, WIDTH, HEIGHT)) {
+            finalScreen = spriteManager.getSprite(SpriteManager.LOST_GAME_SPRITE);
+            startPressed = false;
+            gameFinnished = true;
+        }
+        if (ballBounds.intersects(beat.getBounds())) {
             ball.horizontalBounce(BEAT_VELOCITY, BEAT_FRICTION);
+        }
+        // OPTIMISE IT!
+        for (Iterator<BlockEntity> blocksIter = cloud.getBlocks().iterator(); blocksIter.hasNext();) {
+            BlockEntity block = blocksIter.next();
+            if (ballBounds.intersects(block.getBounds())) {
+                Rectangle blockBounds = block.getBounds();
+                if (ballBounds.intersectsLine(blockBounds.getX(), blockBounds.getY(), blockBounds.getX() + blockBounds.getWidth(),
+                   blockBounds.getY()) ||
+                   ballBounds.intersectsLine(blockBounds.getX(), blockBounds.getY() + blockBounds.getHeight(),
+                   blockBounds.getX() + blockBounds.getWidth(), blockBounds.getY() + blockBounds.getHeight())){
+                    ball.horizontalBounce(0, 0);
+                    blocksIter.remove();
+                    break;
+                }
+                if (ballBounds.intersectsLine(blockBounds.getX(), blockBounds.getY(), blockBounds.getX(),
+                    blockBounds.getY() + blockBounds.getHeight()) ||
+                    ballBounds.intersectsLine(blockBounds.getX() + blockBounds.getWidth(), blockBounds.getY(),
+                    blockBounds.getX() + blockBounds.getWidth(), blockBounds.getY() + blockBounds.getHeight())){
+                    ball.verticalBounce(0, 0);
+                    blocksIter.remove();
+                    break;
+                }
+            }
+
         }
     }
 
@@ -162,7 +208,24 @@ public class Game extends Canvas implements Runnable{
         return 2;
     }
 
+    private void checkWinCase(){
+        if (cloud.getBlocks().isEmpty()) {
+            finalScreen = spriteManager.getSprite(SpriteManager.WON_GAME_SPRITE);
+            startPressed = false;
+            gameFinnished = true;
+        }
+    }
 
+    private void finishGame() {
+        Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
+        g.setColor(Color.black);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+        if (finalScreen != null) {
+            finalScreen.draw(g, 200, 200);
+        }
+        g.dispose();
+        bufferStrategy.show();
+    }
 
     private class KeyInputHandler extends KeyAdapter implements KeyListener{
         public void keyPressed(KeyEvent e){
@@ -184,7 +247,7 @@ public class Game extends Canvas implements Runnable{
         }
 
         public void keyTyped(KeyEvent e){
-            if (e.getKeyCode() == KeyEvent.VK_ENTER){
+            if (e.getKeyChar() == 10){
                 startPressed = true;
             }
             if (e.getKeyChar() == 27){
@@ -196,8 +259,6 @@ public class Game extends Canvas implements Runnable{
 
     public static void main(String[] args){
         Game game = new Game();
-        //game.startInitialization();
-        //System.out.println(game.beat.getBounds().contains(0, BEAT_START_Y));
         game.run();
     }
 }

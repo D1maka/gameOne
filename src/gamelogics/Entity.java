@@ -42,11 +42,11 @@ public class Entity {
         return new Rectangle((int) x, (int) y, sprite.getWidth(), sprite.getHeight());
     }
 
-    protected float getX() {
+    public float getX() {
         return x;
     }
 
-    protected float getY() {
+    public float getY() {
         return y;
     }
 
